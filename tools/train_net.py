@@ -49,6 +49,9 @@ def parse_args():
     parser.add_argument('--set', dest='set_cfgs',
                         help='set config keys', default=None,
                         nargs=argparse.REMAINDER)
+    parser.add_argument('--prun', dest='prun_type',
+                        help='set pruning type',
+                        default=0, type=int)
 
     if len(sys.argv) == 1:
         parser.print_help()

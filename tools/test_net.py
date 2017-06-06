@@ -49,6 +49,9 @@ def parse_args():
     parser.add_argument('--num_dets', dest='max_per_image',
                         help='max number of detections per image',
                         default=100, type=int)
+    parser.add_argument('--prun', dest='prun_type',
+                        help='set pruning type',
+                        default=0, type=int)
 
     if len(sys.argv) == 1:
         parser.print_help()

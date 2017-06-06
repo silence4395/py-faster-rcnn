@@ -1,0 +1,51 @@
+train_net: "models/pascal_voc/ZF/faster_rcnn_alt_opt/conv_stage2_rpn_train.pt"
+
+base_lr: 0.0001
+lr_policy: "step"
+gamma: 0.1
+stepsize: 60000
+display: 100
+average_loss: 100
+momentum: 0.9
+weight_decay: 0.0005
+
+# We disable standard caffe solver snapshotting and implement our own snapshot
+# function
+snapshot: 0
+# We still use the snapshot prefix, though
+snapshot_prefix: "zf_rpn"
+
+# pruning config parameters
+# prun CONV
+prun_conv: 1
+conv_ratio_0: 0.3
+conv_ratio_1: 0.4
+conv_ratio_2: 0.65
+conv_ratio_3: 0.7
+conv_ratio_4: 0.65
+conv_ratio_5: 0.5
+conv_ratio_6: 0.3
+conv_ratio_7: 0.3
+
+# prun FC
+prun_fc: 0
+fc_ratio_0: 0.95
+fc_ratio_1: 0.92
+fc_ratio_2: 0.8
+fc_ratio_3: 0.85
+#prun_fc_num: 4
+prun_fc_num: 0
+prun_retrain: 1
+ 
+# CSC storage
+sparse_csc: 0
+sparse_col: 1
+idx_diff_conv: 8
+idx_diff_fc: 5
+
+# quan weights
+quan_enable: 0
+quan_k_min: 4
+quan_k_max: 8
+quan_max_iter: 10000
+quan_retrain: 0

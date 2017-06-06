@@ -43,9 +43,24 @@ LOG="experiments/logs/faster_rcnn_alt_opt_${NET}_${EXTRA_ARGS_SLUG}.txt.`date +'
 exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
+#time ./tools/train_faster_rcnn_alt_opt.py --gpu ${GPU_ID} \
+#  --net_name ${NET} \
+#  --weights data/faster_rcnn_models/${NET}_faster_rcnn_final.caffemodel \
+#  --imdb ${TRAIN_IMDB} \
+#  --cfg experiments/cfgs/faster_rcnn_alt_opt.yml \
+#  ${EXTRA_ARGS}
+
+# pruning
+#time ./tools/train_faster_rcnn_alt_opt.py --gpu ${GPU_ID} \
+#  --net_name ${NET} \
+#  --weights output/faster_rcnn_alt_opt/voc_2007_trainval/zf_fast_rcnn_stage2_iter_40000.caffemodel \
+#  --imdb ${TRAIN_IMDB} \
+#  --cfg experiments/cfgs/faster_rcnn_alt_opt.yml \
+#  ${EXTRA_ARGS}
+
 time ./tools/train_faster_rcnn_alt_opt.py --gpu ${GPU_ID} \
   --net_name ${NET} \
-  --weights data/imagenet_models/${NET}.v2.caffemodel \
+  --weights output/faster_rcnn_alt_opt/voc_2007_trainval/0.587_ZF_faster_rcnn_final.caffemodel \
   --imdb ${TRAIN_IMDB} \
   --cfg experiments/cfgs/faster_rcnn_alt_opt.yml \
   ${EXTRA_ARGS}
@@ -54,9 +69,16 @@ set +x
 NET_FINAL=`grep "Final model:" ${LOG} | awk '{print $3}'`
 set -x
 
+#time ./tools/test_net.py --gpu ${GPU_ID} \
+#  --def models/${PT_DIR}/${NET}/faster_rcnn_alt_opt/faster_rcnn_test.pt \
+#  --net ${NET_FINAL} \
+#  --imdb ${TEST_IMDB} \
+#  --cfg experiments/cfgs/faster_rcnn_alt_opt.yml \
+#  ${EXTRA_ARGS}
+
 time ./tools/test_net.py --gpu ${GPU_ID} \
   --def models/${PT_DIR}/${NET}/faster_rcnn_alt_opt/faster_rcnn_test.pt \
-  --net ${NET_FINAL} \
+  --net output/faster_rcnn_alt_opt/voc_2007_trainval/Real_alt_final.caffemodel \
   --imdb ${TEST_IMDB} \
   --cfg experiments/cfgs/faster_rcnn_alt_opt.yml \
   ${EXTRA_ARGS}

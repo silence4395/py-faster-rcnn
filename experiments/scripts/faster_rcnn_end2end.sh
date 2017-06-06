@@ -27,7 +27,7 @@ case $DATASET in
     TRAIN_IMDB="voc_2007_trainval"
     TEST_IMDB="voc_2007_test"
     PT_DIR="pascal_voc"
-    ITERS=70000
+    ITERS=0
     ;;
   coco)
     # This is a very long and slow training schedule
@@ -48,21 +48,45 @@ LOG="experiments/logs/faster_rcnn_end2end_${NET}_${EXTRA_ARGS_SLUG}.txt.`date +'
 exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
+#time ./tools/train_net.py --gpu ${GPU_ID} \
+#  --solver models/${PT_DIR}/${NET}/faster_rcnn_end2end/solver.prototxt \
+#  --weights data/faster_rcnn_models/${NET}_faster_rcnn_final.caffemodel \
+#  --imdb ${TRAIN_IMDB} \
+#  --iters ${ITERS} \
+#  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
+#  ${EXTRA_ARGS}
+
 time ./tools/train_net.py --gpu ${GPU_ID} \
   --solver models/${PT_DIR}/${NET}/faster_rcnn_end2end/solver.prototxt \
-  --weights data/imagenet_models/${NET}.v2.caffemodel \
+  --weights output/faster_rcnn_end2end/voc_2007_trainval/0.587_Real_alt_final.caffemodel \
   --imdb ${TRAIN_IMDB} \
   --iters ${ITERS} \
   --cfg experiments/cfgs/faster_rcnn_end2end.yml \
   ${EXTRA_ARGS}
 
+# retrain
+#time ./tools/train_net.py --gpu ${GPU_ID} \
+#  --solver models/${PT_DIR}/${NET}/faster_rcnn_end2end/solver.prototxt \
+#  --weights output/faster_rcnn_end2end/voc_2007_trainval/zf_faster_rcnn_iter_60000.caffemodel \
+#  --imdb ${TRAIN_IMDB} \
+#  --iters ${ITERS} \
+#  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
+#  ${EXTRA_ARGS}
+
 set +x
 NET_FINAL=`grep -B 1 "done solving" ${LOG} | grep "Wrote snapshot" | awk '{print $4}'`
 set -x
 
+#time ./tools/test_net.py --gpu ${GPU_ID} \
+#  --def models/${PT_DIR}/${NET}/faster_rcnn_end2end/test.prototxt \
+#  --net ${NET_FINAL} \
+#  --imdb ${TEST_IMDB} \
+#  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
+#  ${EXTRA_ARGS}
+
 time ./tools/test_net.py --gpu ${GPU_ID} \
-  --def models/${PT_DIR}/${NET}/faster_rcnn_end2end/test.prototxt \
-  --net ${NET_FINAL} \
+  --def models/pascal_voc/ZF/faster_rcnn_alt_opt/faster_rcnn_test.pt \
+  --net output/faster_rcnn_end2end/voc_2007_trainval/zf_faster_rcnn_iter_0.caffemodel \
   --imdb ${TEST_IMDB} \
   --cfg experiments/cfgs/faster_rcnn_end2end.yml \
   ${EXTRA_ARGS}
