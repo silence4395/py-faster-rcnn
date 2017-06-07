@@ -1,0 +1,1 @@
+./experiments/scripts/faster_rcnn_alt_opt.sh 1 ZF pascal_voc |& tee faster_rcnn.log

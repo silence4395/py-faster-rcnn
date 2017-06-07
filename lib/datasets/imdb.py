@@ -108,7 +108,13 @@ class imdb(object):
             oldx2 = boxes[:, 2].copy()
             boxes[:, 0] = widths[i] - oldx2 - 1
             boxes[:, 2] = widths[i] - oldx1 - 1
+            
+            for index in range(len(boxes)):  # Add by zhluo, 6/6/2017
+                if boxes[index][2] < boxes[index][0]:
+                    boxes[index][0] = 0
+                
             assert (boxes[:, 2] >= boxes[:, 0]).all()
+            
             entry = {'boxes' : boxes,
                      'gt_overlaps' : self.roidb[i]['gt_overlaps'],
                      'gt_classes' : self.roidb[i]['gt_classes'],

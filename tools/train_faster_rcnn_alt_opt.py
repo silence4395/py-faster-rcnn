@@ -78,6 +78,7 @@ def get_solvers(net_name):
     solvers = [os.path.join(cfg.MODELS_DIR, *s) for s in solvers]
     # Iterations for each training stage
     max_iters = [80000, 40000, 80000, 40000]
+    #max_iters = [100, 100, 100, 100]
     # max_iters = [100, 100, 100, 100]
     # Test prototxt for the RPN
     rpn_test_prototxt = os.path.join(
@@ -194,8 +195,8 @@ def train_fast_rcnn(queue=None, imdb_name=None, init_model=None, solver=None,
                             pretrained_model=init_model,
                             max_iters=max_iters)
     # Cleanup all but the final model
-    for i in model_paths[:-1]:
-        os.remove(i)
+    #for i in model_paths[:-1]:
+    #    os.remove(i)
     fast_rcnn_model_path = model_paths[-1]
     # Send Fast R-CNN model path over the multiprocessing queue
     queue.put({'model_path': fast_rcnn_model_path})
@@ -225,7 +226,7 @@ if __name__ == '__main__':
     solvers, max_iters, rpn_test_prototxt = get_solvers(args.net_name)
 
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print 'Stage 1 RPN, init from ImageNet model'
+    print '0 Stage 1 RPN, init from ImageNet model'
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
     cfg.TRAIN.SNAPSHOT_INFIX = 'stage1'
@@ -242,7 +243,7 @@ if __name__ == '__main__':
     p.join()
 
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print 'Stage 1 RPN, generate proposals'
+    print '1 Stage 1 RPN, generate proposals'
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
     mp_kwargs = dict(
@@ -257,14 +258,15 @@ if __name__ == '__main__':
     p.join()
 
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print 'Stage 1 Fast R-CNN using RPN proposals, init from ImageNet model'
+    print '2 Stage 1 Fast R-CNN using RPN proposals, init from ImageNet model'
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
     cfg.TRAIN.SNAPSHOT_INFIX = 'stage1'
     mp_kwargs = dict(
             queue=mp_queue,
             imdb_name=args.imdb_name,
-            init_model=args.pretrained_model,
+            #init_model=args.pretrained_model,
+            init_model=str(rpn_stage1_out['model_path']),
             solver=solvers[1],
             max_iters=max_iters[1],
             cfg=cfg,
@@ -275,7 +277,7 @@ if __name__ == '__main__':
     p.join()
 
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print 'Stage 2 RPN, init from stage 1 Fast R-CNN model'
+    print '3 Stage 2 RPN, init from stage 1 Fast R-CNN model'
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
     cfg.TRAIN.SNAPSHOT_INFIX = 'stage2'
@@ -292,7 +294,7 @@ if __name__ == '__main__':
     p.join()
 
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print 'Stage 2 RPN, generate proposals'
+    print '4 Stage 2 RPN, generate proposals'
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
     mp_kwargs = dict(
@@ -307,7 +309,7 @@ if __name__ == '__main__':
     p.join()
 
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-    print 'Stage 2 Fast R-CNN, init from stage 2 RPN R-CNN model'
+    print '5 Stage 2 Fast R-CNN, init from stage 2 RPN R-CNN model'
     print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
     cfg.TRAIN.SNAPSHOT_INFIX = 'stage2'

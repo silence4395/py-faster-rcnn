@@ -61,7 +61,16 @@ class SolverWrapper(object):
         scale_bbox_params = (cfg.TRAIN.BBOX_REG and
                              cfg.TRAIN.BBOX_NORMALIZE_TARGETS and
                              net.params.has_key('bbox_pred'))
-
+        
+        #infix = ('_' + cfg.TRAIN.SNAPSHOT_INFIX
+        #         if cfg.TRAIN.SNAPSHOT_INFIX != '' else '')
+        #filename_1 = (self.solver_param.snapshot_prefix + infix +
+        #            '_iter_{:d}'.format(self.solver.iter) + '.caffemodel')
+        filename_1 = 'zf_faster_rcnn_iter_final.caffemodel'
+        filename_1 = os.path.join(self.output_dir, filename_1)
+        net.save(str(filename_1))
+        print ' [ Info ] Save origin train model.'
+        
         if scale_bbox_params:
             # save original values
             orig_0 = net.params['bbox_pred'][0].data.copy()
@@ -75,20 +84,21 @@ class SolverWrapper(object):
                     (net.params['bbox_pred'][1].data *
                      self.bbox_stds + self.bbox_means)
 
-        infix = ('_' + cfg.TRAIN.SNAPSHOT_INFIX
-                 if cfg.TRAIN.SNAPSHOT_INFIX != '' else '')
-        filename = (self.solver_param.snapshot_prefix + infix +
-                    '_iter_{:d}'.format(self.solver.iter) + '.caffemodel')
-        filename = os.path.join(self.output_dir, filename)
-
-        net.save(str(filename))
-        print 'Wrote snapshot to: {:s}'.format(filename)
+        #infix = ('_' + cfg.TRAIN.SNAPSHOT_INFIX
+        #         if cfg.TRAIN.SNAPSHOT_INFIX != '' else '')
+        #filename = (self.solver_param.snapshot_prefix + infix +
+        #            '_iter_{:d}'.format(self.solver.iter) + '.caffemodel')
+        filename_2 = 'Real_final.caffemodel'
+        filename_2 = os.path.join(self.output_dir, filename_2)
+        net.save(str(filename_2))
+        
+        print 'Wrote snapshot to: {:s}'.format(filename_1)
 
         if scale_bbox_params:
             # restore net to original state
             net.params['bbox_pred'][0].data[...] = orig_0
             net.params['bbox_pred'][1].data[...] = orig_1
-        return filename
+        return filename_1
 
     def train_model(self, max_iters):
         """Network training loop."""

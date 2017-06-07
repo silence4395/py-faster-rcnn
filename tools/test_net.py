@@ -76,15 +76,19 @@ if __name__ == '__main__':
     while not os.path.exists(args.caffemodel) and args.wait:
         print('Waiting for {} to exist...'.format(args.caffemodel))
         time.sleep(10)
-
+        
+    print ' [ Info ] Set GPU mode'
     caffe.set_mode_gpu()
     caffe.set_device(args.gpu_id)
     net = caffe.Net(args.prototxt, args.caffemodel, caffe.TEST)
+    print ' [ Info ] Caffe init done.'
     net.name = os.path.splitext(os.path.basename(args.caffemodel))[0]
 
+    print ' [ Info ] Get IMDB dataset.'
     imdb = get_imdb(args.imdb_name)
     imdb.competition_mode(args.comp_mode)
     if not cfg.TEST.HAS_RPN:
         imdb.set_proposal_method(cfg.TEST.PROPOSAL_METHOD)
 
+    print ' [ Info ] Start net detection. '
     test_net(net, imdb, max_per_image=args.max_per_image, vis=args.vis)

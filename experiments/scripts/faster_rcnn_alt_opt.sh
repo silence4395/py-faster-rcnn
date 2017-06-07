@@ -43,9 +43,15 @@ LOG="experiments/logs/faster_rcnn_alt_opt_${NET}_${EXTRA_ARGS_SLUG}.txt.`date +'
 exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
+#time ./tools/train_faster_rcnn_alt_opt.py --gpu ${GPU_ID} \
+#  --net_name ${NET} \
+#  --weights data/faster_rcnn_models/${NET}_faster_rcnn_final.caffemodel \
+#  --imdb ${TRAIN_IMDB} \
+#  --cfg experiments/cfgs/faster_rcnn_alt_opt.yml \
+#  ${EXTRA_ARGS}
+
 time ./tools/train_faster_rcnn_alt_opt.py --gpu ${GPU_ID} \
   --net_name ${NET} \
-  --weights data/imagenet_models/${NET}.v2.caffemodel \
   --imdb ${TRAIN_IMDB} \
   --cfg experiments/cfgs/faster_rcnn_alt_opt.yml \
   ${EXTRA_ARGS}
