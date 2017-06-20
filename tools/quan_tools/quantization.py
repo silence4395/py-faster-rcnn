@@ -178,22 +178,7 @@ def quantize_mini_float(args, cfg, max_in, max_out, max_param, new_prototxt, tes
     #    if (bitwidth - 1 - int(exp_bits_)) > 0:
     #        caffe.fixfloat(str(prototxt), bitwidth, int(exp_bits_), str(new_prototxt))
 
-def quantize_dynamic_float(args, cfg, max_in, max_out, max_param, layer_idx, new_prototxt, test_score_baseline):
-    # Initial array
-    il_in = max_in
-    il_out = max_out
-    il_param = max_param
-    # Find the integer length for dynamic fixed point numbers.
-    # The integer length is chosen such that no saturation occurs.
-    # This approximation assumes an infinitely long factional part.
-    # For layer activations, we reduce the integer length by one bit.
-    for i in range(0, len(max_in)):
-	il_in[i] = int(math.ceil(np.log2(max_in[i])))
-	il_out[i] = int(math.ceil(np.log2(max_out[i])))
-	il_param[i] = int(math.ceil(np.log2(max_param[i])+1))
-	print ' [Info] Layer ', net._layer_names[int(layer_idx[i])], ' \tinterger length input: ', il_in[i], \
-	      ' output: ', il_out[i], ' parameters: ', il_param[i]
-
+def quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline):
     # Convolution parameters quantization
     user_type = np.dtype({
 	    'names':['bitwidth', 'accuracy'],
@@ -204,16 +189,14 @@ def quantize_dynamic_float(args, cfg, max_in, max_out, max_param, layer_idx, new
     for qtype in range(0, 3):
 	bitwidth = 16
 	index = 0
-	caffe.dynamicfixfloat(args.prototxt, -1, -1, bitwidth, il_in, il_out, il_param, \
-			      len(max_in), new_prototxt, qtype)
+	caffe.dynamicfixfloat(args.prototxt, -1, -1, bitwidth, new_prototxt, qtype)
 	quan_info[qtype][index]['bitwidth'] = bitwidth
         quan_info[qtype][index]['accuracy'] = forward(args.iter, new_prototxt, args.caffemodel, args.imdb_name, \
                                                       args.comp_mode, args.max_per_image, args.vis, cfg)
 	index = index + 1
 	for i in [8, 4, 2, 1]:
 	    bitwidth = i
-	    caffe.dynamicfixfloat(new_prototxt, -1, -1, bitwidth, il_in, il_out, il_param, \
-				  len(max_in), new_prototxt, qtype)
+	    caffe.dynamicfixfloat(new_prototxt, -1, -1, bitwidth, new_prototxt, qtype)
             accuracy = forward(args.iter, new_prototxt, args.caffemodel, args.imdb_name, \
                                args.comp_mode, args.max_per_image, args.vis, cfg)
 	    if accuracy + args.margin/100 >= test_score_baseline:
@@ -243,7 +226,7 @@ def quantize_dynamic_float(args, cfg, max_in, max_out, max_param, layer_idx, new
     # This network combines dynamic fixed point parameters in convolutional and
     # inner product layers, as well as dynamic fixed point activations.
     caffe.dynamicfixfloat(args.prototxt, int(best_param_[0]), int(best_param_[1]), int(best_param_[2]), \
-			  il_in, il_out, il_param, len(max_in), args.quan_model, 3)
+			  args.quan_model, 3)
     accuracy = forward(args.iter, args.quan_model, args.caffemodel, args.imdb_name, \
                        args.comp_mode, args.max_per_image, args.vis, cfg)
 
@@ -311,12 +294,8 @@ if __name__=="__main__":
     print ' [ Info ] Baseline Score: ', test_score_baseline
 
     # Get every layer's max value
-    net = get_max_value(args, cfg, iters=1000)
+    net = get_max_value(args, cfg, iters=100)
     net._display_max_value
-    max_in = net._layer_max_in
-    max_out = net._layer_max_out
-    max_param = net._layer_max_param
-    layer_idx = net._layer_max_name
 
     new_prototxt = 'models/pascal_voc/ZF/faster_rcnn_end2end/tmp.prototxt'
     if args.trimming_mode == 'minifloat':
@@ -324,8 +303,7 @@ if __name__=="__main__":
 	quantize_mini_float(args, cfg, max_in, max_out, max_param, new_prototxt, test_score_baseline)
     elif args.trimming_mode == 'dynamic_fixed_point':
 	print ' Set dynamic_fixed_point mode.'
-	quantize_dynamic_float(args, cfg, max_in, max_out, max_param, layer_idx, \
-                               new_prototxt, test_score_baseline)
+	quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline)
     elif args.trimming_mode == 'integer_power_of_2_weights':
 	print ' Set integer_power_of_2_weights mode.'
     else:

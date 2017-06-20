@@ -160,19 +160,17 @@ layer {
 #========= RPN ============
 
 layer {
-  name: "rpn_conv/3x3"
+  name: "rpn_conv1"
   type: "Convolution"
   bottom: "conv5"
   top: "rpn/output"
   convolution_param {
     num_output: 256
     kernel_size: 3 pad: 1 stride: 1
-    weight_filler { type: "gaussian" std: 0.01 }
-    bias_filler { type: "constant" value: 0 }
   }
 }
 layer {
-  name: "rpn_relu/3x3"
+  name: "rpn_relu1"
   type: "ReLU"
   bottom: "rpn/output"
   top: "rpn/output"
@@ -226,8 +224,6 @@ layer {
   convolution_param {
     num_output: 18   # 2(bg/fg) * 9(anchors)
     kernel_size: 1 pad: 0 stride: 1
-    weight_filler { type: "gaussian" std: 0.01 }
-    bias_filler { type: "constant" value: 0 }
   }
 }
 layer {
@@ -238,8 +234,6 @@ layer {
   convolution_param {
     num_output: 36   # 4 * 9(anchors)
     kernel_size: 1 pad: 0 stride: 1
-    weight_filler { type: "gaussian" std: 0.01 }
-    bias_filler { type: "constant" value: 0 }
   }
 }
 layer {
