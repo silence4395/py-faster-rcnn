@@ -170,7 +170,7 @@ def quantize_mini_float(args, cfg, new_prototxt, test_score_baseline):
         if (args.margin/100 >= test_score_baseline - mini_info[i]['accuracy']):
             best_bit_width = mini_info[i]['bitwidth']
 
-    caffe.minifloat(str(args.prototxt), best_bit_width, int(exp_bits_), str(args.quan_model))
+    caffe.minifloat(str(args.prototxt), int(best_bit_width), int(exp_bits_), str(args.quan_model))
 
     print '------------------------------'
     print 'Network accuracy analysis for'
@@ -213,11 +213,6 @@ def quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline):
 		index = index + 1
 	    else:
 		break
-
-    #for i in range(0, 3):
-    #    print ' ============= QUAN', i, 'INFO ================='
-    #    for j in range(0, 5):
-    #        print 'bitwidth: ', quan_info[i][j][0], '\taccuracy: ', quan_info[i][j][1]
 
     # choose best bit-width for different network parts
     best_param_ = [32, 32, 32] # 0: conv weight width, 1: fc weight width, 2: layer input and oputput
@@ -262,6 +257,21 @@ def quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline):
     print ' Accuracy: ', accuracy
     print ' Please fine-tune'
 
+def quantize_power_of_2(args, cfg, test_score_baseline):
+    caffe.power_of_two(str(args.prototxt))
+    accuracy = forward(args.iter, str(args.prototxt), args.caffemodel, args.imdb_name, \
+                           args.comp_mode, args.max_per_image, args.vis, cfg)
+    # Write summary of integer-power-of-2-weights analysis to log
+    print '------------------------------'
+    print 'Network accuracy analysis for'
+    print 'Integer-power-of-two weights'
+    print 'in Convolutional (CONV) and'
+    print 'fully connected (FC) layers.'
+    print 'Baseline 32bit float: ', test_score_baseline
+    print 'Quantized net:'
+    print '4bit: \t', accuracy
+    print 'Please fine-tune.'
+    
 def usage():
     usage_info=\
 """
