@@ -324,7 +324,7 @@ if __name__=="__main__":
 	quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline)
     elif args.trimming_mode == 'integer_power_of_2_weights':
 	print ' Set integer_power_of_2_weights mode.'
-        quantize_power_of_2(args, cfg, new_prototxt, test_score_baseline)
+        quantize_power_of_2(args, cfg, test_score_baseline)
     else:
 	print 'Please set trimming_mode: dynamic_fixed_point, minifloat or integer_power_of_2_weights'
 	sys.exit(1)
