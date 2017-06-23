@@ -133,35 +133,44 @@ def forward(iter_num, prototxt, caffemodel, imdb_name, comp_mode, max_per_image,
     test_score = test_score / iter_num
     return test_score
 
-def quantize_mini_float(args, cfg, max_in, max_out, max_param, new_prototxt, test_score_baseline):
+def quantize_mini_float(args, cfg, new_prototxt, test_score_baseline):
     exp_bits_ = 4
-    accuracy_16 = 0
-    accuracy_8 = 0
-    for i in range(0, len(max_in)):
-	exp_in = math.ceil(np.log2(np.log2(max_in[i]) - 1) + 1)
-	exp_out = math.ceil(np.log2(np.log2(max_out[i]) - 1) + 1)
-	#print 'in: ', max_in[i], 'exp: ', exp_in, ' out: ', max_out[i], ' exp: ', exp_out
-	exp_bits_ = max(exp_bits_, exp_in, exp_out)
-    print ' [Info] Select exponent bit: ', exp_bits_
     bitwidth = 16
-    caffe.fixfloat(str(args.prototxt), bitwidth, int(exp_bits_), str(new_prototxt))
-    accuracy_16 = forward(args.iter, new_prototxt, args.caffemodel, args.imdb_name, args.comp_mode, \
-			  args.max_per_image, args.vis, cfg)
-
-    bitwidth = 8
-    if (bitwidth - 1 - int(exp_bits_)) > 0:
-	caffe.fixfloat(str(new_prototxt), bitwidth, int(exp_bits_), str(new_prototxt))
-	accuracy_8 = forward(args.iter, new_prototxt, args.caffemodel, args.imdb_name, args.comp_mode, \
-			     args.max_per_image, args.vis, cfg)
+    index = 0
+    
+    user_type = np.dtype({
+	    'names':['bitwidth', 'accuracy'],
+	    'formats':['i', 'f']})
+    mini_info = np.zeros(5, dtype=user_type)
+    
+    max_in = caffe.getmaxin()
+    max_out = caffe.getmaxout()
+    for i in range(0, len(max_in)):
+        exp_in = math.ceil(np.log2(np.log2(max_in[i]) - 1) + 1)
+        exp_out = math.ceil(np.log2(np.log2(max_out[i]) - 1) + 1)
+        exp_bits_ = max(exp_bits_, exp_in, exp_out)
+    print ' [Info] Select exponent bit: ', exp_bits_
+    
+    caffe.minifloat(str(args.prototxt), bitwidth, int(exp_bits_), str(new_prototxt))
+    mini_info[index]['bitwidth'] = 16
+    mini_info[index]['accuracy'] = forward(args.iter, new_prototxt, args.caffemodel, args.imdb_name, \
+                                          args.comp_mode, args.max_per_image, args.vis, cfg)
+    index = index + 1
+    for i in [8, 4, 2, 1]:
+        bitwidth = i
+        if (bitwidth - 1 - int(exp_bits_)) > 0:
+            caffe.minifloat(str(new_prototxt), bitwidth, int(exp_bits_), str(new_prototxt))
+            mini_info[index]['bitwidth'] = bitwidth
+            mini_info[index]['accuracy'] = forward(args.iter, new_prototxt, args.caffemodel, args.imdb_name, \
+                                                      args.comp_mode, args.max_per_image, args.vis, cfg)
+            index = index + 1
 
     best_bit_width = 32
-    if args.margin/100 >= test_score_baseline - accuracy_16:
-	best_bit_width = 16
+    for i in range(0, 5):
+        if (args.margin/100 >= test_score_baseline - mini_info[i]['accuracy']):
+            best_bit_width = mini_info[i]['bitwidth']
 
-    if args.margin/100 >= test_score_baseline - accuracy_8:
-	best_bit_width = 8
-
-    caffe.fixfloat(str(args.prototxt), best_bit_width, int(exp_bits_), str(args.quan_model))
+    caffe.minifloat(str(args.prototxt), best_bit_width, int(exp_bits_), str(args.quan_model))
 
     print '------------------------------'
     print 'Network accuracy analysis for'
@@ -169,14 +178,13 @@ def quantize_mini_float(args, cfg, max_in, max_out, max_param, new_prototxt, tes
     print 'connected (FC) layers.'
     print 'Baseline 32bit float: ', test_score_baseline
     print 'Minifloat net:'
-    print '16bit: \t', accuracy_16
-    print '8 bit: \t', accuracy_8
+    print '16bit: \t', mini_info[0]['accuracy']
+    print '8 bit: \t', mini_info[1]['accuracy']
+    print '4 bit: \t', mini_info[2]['accuracy']
+    print '2 bit: \t', mini_info[3]['accuracy']
+    print '1 bit: \t', mini_info[4]['accuracy']
     print 'Select bit width: ', best_bit_width
     print 'Please fine-tune.'
-
-    #for bitwidth in [16, 8, 4]:
-    #    if (bitwidth - 1 - int(exp_bits_)) > 0:
-    #        caffe.fixfloat(str(prototxt), bitwidth, int(exp_bits_), str(new_prototxt))
 
 def quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline):
     # Convolution parameters quantization
@@ -300,12 +308,13 @@ if __name__=="__main__":
     new_prototxt = 'models/pascal_voc/ZF/faster_rcnn_end2end/tmp.prototxt'
     if args.trimming_mode == 'minifloat':
 	print ' Set minifloat mode.'
-	quantize_mini_float(args, cfg, max_in, max_out, max_param, new_prototxt, test_score_baseline)
+	quantize_mini_float(args, cfg, new_prototxt, test_score_baseline)
     elif args.trimming_mode == 'dynamic_fixed_point':
 	print ' Set dynamic_fixed_point mode.'
 	quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline)
     elif args.trimming_mode == 'integer_power_of_2_weights':
 	print ' Set integer_power_of_2_weights mode.'
+        quantize_power_of_2(args, cfg, new_prototxt, test_score_baseline)
     else:
 	print 'Please set trimming_mode: dynamic_fixed_point, minifloat or integer_power_of_2_weights'
 	sys.exit(1)
