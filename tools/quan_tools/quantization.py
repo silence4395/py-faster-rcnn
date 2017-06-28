@@ -257,9 +257,9 @@ def quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline):
     print ' Accuracy: ', accuracy
     print ' Please fine-tune'
 
-def quantize_power_of_2(args, cfg, test_score_baseline):
-    caffe.power_of_two(str(args.prototxt))
-    accuracy = forward(args.iter, str(args.prototxt), args.caffemodel, args.imdb_name, \
+def quantize_power_of_2(args, cfg, new_prototxt, test_score_baseline):
+    caffe.power_of_two(str(args.prototxt), str(new_prototxt))
+    accuracy = forward(args.iter, str(new_prototxt), args.caffemodel, args.imdb_name, \
                            args.comp_mode, args.max_per_image, args.vis, cfg)
     # Write summary of integer-power-of-2-weights analysis to log
     print '------------------------------'
@@ -324,7 +324,7 @@ if __name__=="__main__":
 	quantize_dynamic_float(args, cfg, new_prototxt, test_score_baseline)
     elif args.trimming_mode == 'integer_power_of_2_weights':
 	print ' Set integer_power_of_2_weights mode.'
-        quantize_power_of_2(args, cfg, test_score_baseline)
+        quantize_power_of_2(args, cfg, new_prototxt, test_score_baseline)
     else:
 	print 'Please set trimming_mode: dynamic_fixed_point, minifloat or integer_power_of_2_weights'
 	sys.exit(1)
