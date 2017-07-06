@@ -1,0 +1,1 @@
+./experiments/scripts/faster_rcnn_end2end_separable_conv.sh 1 ZF pascal_voc |& tee faster_rcnn.log
