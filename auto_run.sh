@@ -83,7 +83,7 @@ while(( $lrn_index<$lrn_length ))
 do
     ./run.sh $GPU_ID ${lrn_type[$lrn_index]}
     LookResult
-    CkeckUseGPU
+    #CkeckUseGPU
     printf "%-20s %-20s \n" ${lrn_type[$lrn_index]} $accuracy >> result.txt
     echo "=============================="
     echo "LRN ${lrn_type[$lrn_index]} iteration done!"

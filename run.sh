@@ -45,4 +45,5 @@ echo "Compiler done!"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 cd ../../../../
-./experiments/scripts/lrn_approximate_faster_rcnn_end2end.sh $GPU_ID $NET $DATASET |& tee log
+#./experiments/scripts/lrn_approximate_faster_rcnn_end2end.sh $GPU_ID $NET $DATASET |& tee log
+./tools/test_net.py --gpu $GPU_ID --def models/pascal_voc/ZF/faster_rcnn_end2end/lrn_approximate_quan.prototxt   --net data/faster_rcnn_models/ZF_faster_rcnn_final.caffemodel --imdb voc_2007_test --cfg experiments/cfgs/faster_rcnn_end2end.yml |& tee log

@@ -29,11 +29,11 @@ layer {
     stride: 2
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
+    fl_layer_in: -1
+    fl_layer_out: -4
     fl_params: 7
   }
 }
@@ -45,7 +45,7 @@ layer {
 }
 layer {
   name: "norm1"
-  type: "LRN"
+  type: "LRNRistretto"
   bottom: "conv1"
   top: "norm1"
   lrn_param {
@@ -54,6 +54,12 @@ layer {
     beta: 0.75
     norm_region: WITHIN_CHANNEL
     engine: CAFFE
+  }
+  quantization_param {
+    bw_layer_in: 8
+    bw_layer_out: 8
+    fl_layer_in: -4
+    fl_layer_out: -1
   }
 }
 layer {
@@ -80,12 +86,12 @@ layer {
     stride: 2
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
-    fl_params: 7
+    fl_layer_in: -1
+    fl_layer_out: -4
+    fl_params: 8
   }
 }
 layer {
@@ -96,7 +102,7 @@ layer {
 }
 layer {
   name: "norm2"
-  type: "LRN"
+  type: "LRNRistretto"
   bottom: "conv2"
   top: "norm2"
   lrn_param {
@@ -105,6 +111,12 @@ layer {
     beta: 0.75
     norm_region: WITHIN_CHANNEL
     engine: CAFFE
+  }
+  quantization_param {
+    bw_layer_in: 8
+    bw_layer_out: 8
+    fl_layer_in: -4
+    fl_layer_out: -1
   }
 }
 layer {
@@ -131,11 +143,11 @@ layer {
     stride: 1
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
+    fl_layer_in: -1
+    fl_layer_out: -2
     fl_params: 7
   }
 }
@@ -157,11 +169,11 @@ layer {
     stride: 1
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
+    fl_layer_in: -2
+    fl_layer_out: -2
     fl_params: 7
   }
 }
@@ -183,11 +195,11 @@ layer {
     stride: 1
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
+    fl_layer_in: -2
+    fl_layer_out: -1
     fl_params: 7
   }
 }
@@ -209,12 +221,12 @@ layer {
     stride: 1
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
-    fl_params: 7
+    fl_layer_in: -1
+    fl_layer_out: 2
+    fl_params: 9
   }
 }
 layer {
@@ -235,12 +247,12 @@ layer {
     stride: 1
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
+    fl_layer_in: 2
     fl_layer_out: 3
-    fl_params: 7
+    fl_params: 8
   }
 }
 layer {
@@ -255,12 +267,12 @@ layer {
     stride: 1
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
-    fl_params: 7
+    fl_layer_in: 2
+    fl_layer_out: 5
+    fl_params: 10
   }
 }
 layer {
@@ -331,12 +343,12 @@ layer {
     num_output: 4096
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
-    fl_params: 7
+    fl_layer_in: -1
+    fl_layer_out: 1
+    fl_params: 10
   }
 }
 layer {
@@ -364,12 +376,12 @@ layer {
     num_output: 4096
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
-    fl_params: 7
+    fl_layer_in: 1
+    fl_layer_out: 4
+    fl_params: 10
   }
 }
 layer {
@@ -397,12 +409,12 @@ layer {
     num_output: 21
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
-    fl_params: 7
+    fl_layer_in: 4
+    fl_layer_out: 2
+    fl_params: 9
   }
 }
 layer {
@@ -414,12 +426,12 @@ layer {
     num_output: 84
   }
   quantization_param {
-    bw_layer_in: 16
-    bw_layer_out: 16
+    bw_layer_in: 8
+    bw_layer_out: 8
     bw_params: 8
-    fl_layer_in: 7
-    fl_layer_out: 3
-    fl_params: 7
+    fl_layer_in: 4
+    fl_layer_out: 6
+    fl_params: 12
   }
 }
 layer {

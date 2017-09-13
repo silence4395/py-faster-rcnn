@@ -14,9 +14,6 @@ fixed_point=$3
 bit_width=$4
 fraction_length=$5
 
-NET=ZF
-DATASET=pascal_voc
-
 function SetLRNType()
 {
     awk -v type=$1 -F ' ' '{if (($1 == "op_type") && ($2 == "="))
@@ -35,16 +32,16 @@ function SetBitWidth()
                                             else if (($1 == "int") && ($2 == "fl") && ($3 == "="))
                                                {print " " " " $1 " " $2 " " $3 " " fl ";"}
                                             else
-                                               {print $0;} }' power_layer.cu >| tmp.cu
+                                               {print $0;}}' power_layer.cu >| tmp.cu
     mv tmp.cu power_layer.cu
 }
 
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-cd caffe-fast-rcnn/src/caffe/layers
+cd caffe-fast-rcnn/src/caffe/layers/
 SetLRNType $LRN_TYPE
 SetBitWidth $fixed_point $bit_width $fraction_length
 cd ../../../
-make -j |& tee log
+make -j && make pycaffe |& tee log
 
 grep "error" log
 ERROR=$?
@@ -62,4 +59,4 @@ echo "Compiler done!"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 cd ../../../../
-./experiments/scripts/lrn_approximate_faster_rcnn_end2end.sh $GPU_ID $NET $DATASET |& tee log
+./tools/test_net.py --gpu $GPU_ID --def models/pascal_voc/ZF/faster_rcnn_end2end/lrn_approximate_quan.prototxt   --net data/faster_rcnn_models/ZF_faster_rcnn_final.caffemodel --imdb voc_2007_test --cfg experiments/cfgs/faster_rcnn_end2end.yml |& tee log

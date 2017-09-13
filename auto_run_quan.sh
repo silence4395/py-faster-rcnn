@@ -16,17 +16,6 @@ lrn_index=0
 bit_index=0
 accuracy=100
 
-function CkeckUseGPU()
-{
-    grep "Use GPU with device ID" log
-    BINGO=$?
-    if [ $BINGO -eq 1 ]
-    then
-	echo "ERROR: Please use GPU mode."
-	lrn_index=100
-    fi
-}
-
 function CheckUseDynamicFixedPoint()
 {
     grep "LRNRistretto" log
@@ -104,7 +93,6 @@ do
 	do
 	    ./run_quan.sh $GPU_ID ${lrn_type[$lrn_index]} 1 ${bit_width[$bit_index]} $fl_value
 	    LookResult
-	    CkeckUseGPU
 	    CheckUseDynamicFixedPoint
 	    printf "%-20s %-20s %-20s %-20s\n" ${lrn_type[$lrn_index]} ${bit_width[$bit_index]} $fl_value $accuracy >> result.txt
 	done
